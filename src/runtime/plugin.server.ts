@@ -35,4 +35,14 @@ export default defineNuxtPlugin(async () => {
 	state.value.flags = response.flags;
 	state.value.experiments = response.experiments;
 	state.value.testids = response.testids;
+
+	// Сохраняем оригинальные значения для DevTools
+	const originalState = useState('varioqubOriginalState', () => ({
+		flags: {},
+		experiments: '',
+		testids: [],
+	}));
+	originalState.value.flags = response.flags;
+	originalState.value.experiments = response.experiments;
+	originalState.value.testids = response.testids;
 });

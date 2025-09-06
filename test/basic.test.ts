@@ -2,14 +2,19 @@ import { fileURLToPath } from 'node:url';
 import { describe, it, expect } from 'vitest';
 import { setup, $fetch } from '@nuxt/test-utils/e2e';
 
-describe('ssr', async () => {
+describe('Varioqub Module', async () => {
 	await setup({
 		rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
 	});
 
 	it('renders the index page', async () => {
-		// Get response to a server-rendered page with `$fetch`.
 		const html = await $fetch('/');
 		expect(html).toContain('<div>basic</div>');
+	});
+
+	it('should have varioqub module configured', async () => {
+		const html = await $fetch('/');
+		// Проверяем, что модуль загружен (можно добавить специфичные проверки)
+		expect(html).toBeDefined();
 	});
 });

@@ -1,0 +1,53 @@
+import { defineNuxtPlugin, useState, useRuntimeConfig, useRoute, useCookie, $fetch } from '#imports';
+
+interface Answer {
+	flags: Record<string, string[]>;
+	i: string;
+	experiments: string;
+	testids: number[];
+}
+
+export default defineNuxtPlugin(async () => {
+	const state = useState('varioqubState', () => ({
+		flags: {},
+		experiments: '',
+		testids: [],
+	}));
+	const config = useRuntimeConfig();
+	const route = useRoute();
+
+	const { clientId, cookieName, clientFeatures } = config.public.varioqub;
+
+	const icookie = useCookie(cookieName);
+
+	try {
+		const response = await $fetch<Answer>('https://uaas.yandex.ru/v1/exps', {
+			query: {
+				client_id: `metrika.${clientId}`,
+				url: route.fullPath,
+				i: icookie.value,
+				client_feature: clientFeatures,
+			},
+			retry: 0,
+		});
+
+		icookie.value = response.i;
+
+		state.value.flags = response.flags;
+		state.value.experiments = response.experiments;
+		state.value.testids = response.testids;
+
+		// Сохраняем оригинальные значения для DevTools
+		const originalState = useState('varioqubOriginalState', () => ({
+			flags: {},
+			experiments: '',
+			testids: [],
+		}));
+		originalState.value.flags = response.flags;
+		originalState.value.experiments = response.experiments;
+		originalState.value.testids = response.testids;
+	} catch (error) {
+		console.warn('[Varioqub] Failed to fetch experiments:', error);
+		// В случае ошибки оставляем состояние по умолчанию
+	}
+});
